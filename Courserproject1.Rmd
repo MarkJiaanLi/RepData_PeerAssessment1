@@ -1,0 +1,148 @@
+---
+title: "CourserProject1"
+author: "Li Jiaan"
+date: '2022-07-18'
+output: html_document
+---
+##Assignment Instructions
+1. Code for reading in the dataset and/or processing the data
+2. Histogram of the total number of steps taken each day
+3. Mean and median number of steps taken each day
+4. Time series plot of the average number of steps taken
+5. The 5-minute interval that, on average, contains the maximum number of steps
+6. Code to describe and show a strategy for imputing missing data
+7. Histogram of the total number of steps taken each day after missing values are imputed
+8. Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+9. All of the R code needed to reproduce the results (numbers, plots, etc.) in the report
+
+```{r, echo=TRUE}
+library("ggplot2")
+```
+
+##Step 1
+```{r, echo=TRUE}
+setwd("~/Downloads")
+data <- read.csv("activity.csv")
+```
+
+##Step 2 
+```{r, echo=TRUE}
+stepsPerDate <- aggregate(steps~date, data, sum, na.rm=TRUE) 
+##To sum all steps in "data" and make a new data frame
+##aggregate() splits a dataframe into subsets
+hist(stepsPerDate$steps, xlab="Daily Steps", ylab="Frequency/Days")
+```
+
+##Step 3
+```{r, echo=TRUE}
+meansteps <- mean(stepsPerDate$steps)
+meansteps
+mediansteps <- median(stepsPerDate$steps)
+mediansteps
+```
+
+##Step 4
+```{r, echo=TRUE}
+library(ggplot2)
+datainterval <- aggregate(steps~interval, data, mean)
+View(datainterval)
+timeseries <- ggplot(datainterval,aes(interval,steps))
+timeseries + geom_line()
+```
+
+##Step 5
+```{r, echo=TRUE}
+totalNA <- sum(is.na(data$steps))
+##Show total number of NA values in "steps" column of "data" dataframe
+```
+##Step 6 and 7
+```{r, echo=TRUE}
+data[is.na(data)] = 0
+datanoNA <- data
+##Denote NA values as "0" and create a new dataset
+stepsPerDatenoNA <- aggregate(steps~date, datanoNA, sum)
+hist(stepsPerDatenoNA$steps, xlab="Daily Steps", ylab="Frequency/Days")
+meanstepsnoNA <- mean(stepsPerDatenoNA$steps)
+medianstepsnoNA <- median(stepsPerDatenoNA$steps)
+##Replace the previous steps for the dataset without NA values
+```
+
+##Step 8
+```{r, echo=TRUE}
+dataYesNA <- read.csv("activity.csv") ##Beacuse original "data" data frame was 
+##overwritten by data[is.na(data)] = 0
+dataYesNA$day <- strptime(dataYesNA[,2], "%Y-%m-%d")
+dataYesNA$weekdays <- weekdays(dataYesNA$day)
+df1 = subset(dataYesNA,dataYesNA$weekdays == "星期六" |
+               dataYesNA$weekdays == "星期天")
+df2 = subset(dataYesNA,dataYesNA$weekdays != "星期六" &
+               dataYesNA$weekdays != "星期天")
+##Make new columns. "day" converts the "date" into the data type 
+##that can be read by weekdays() function.
+##For some reason the weekdays are shown in Chinese.
+
+df1mean <- aggregate(steps~interval, df1, mean)
+View(df1mean)
+df2mean <- aggregate(steps~interval, df2, mean)
+View(df2mean)
+
+par(mfrow = c(1, 2))
+with(df1mean,plot(interval,steps, type="l", xlab="Interval - Weekend"))
+with(df2mean,plot(interval,steps, type="l", xlab="Interval - Weekend"))
+```
+
+##Step 9
+```{r, echo=TRUE}
+setwd("~/Downloads")
+data <- read.csv("activity.csv")
+View(data)
+stepsPerDate <- aggregate(steps~date, data, sum, na.rm=TRUE) 
+##To sum all steps in "data" and make a new data frame
+##aggregate() splits a dataframe into subsets
+hist(stepsPerDate$steps, xlab="Daily Steps", ylab="Frequency/Days")
+
+"Calculate and report the mean and median of the total number of steps taken per day
+"
+meansteps <- mean(stepsPerDate$steps)
+mediansteps <- median(stepsPerDate$steps)
+
+datainterval <- aggregate(steps~interval, data, mean)
+View(datainterval)
+timeseries <- ggplot(datainterval,aes(interval,steps))
+timeseries + geom_line()
+
+maxinterval <- datainterval[which.max(datainterval$steps),]$interval
+##use which.max() to find the max steps and the corresponding interval
+
+totalNA <- sum(is.na(data$steps))
+##Show total number of NA values in "steps" column of "data" dataframe
+
+data[is.na(data)] = 0
+datanoNA <- data
+stepsPerDatenoNA <- aggregate(steps~date, datanoNA, sum)
+hist(stepsPerDatenoNA$steps, xlab="Daily Steps", ylab="Frequency/Days")
+meanstepsnoNA <- mean(stepsPerDatenoNA$steps)
+medianstepsnoNA <- median(stepsPerDatenoNA$steps)
+##Replace the previous steps for the dataset without NA values
+
+dataYesNA <- read.csv("activity.csv") ##Beacuse original "data" data frame was 
+##overwritten by data[is.na(data)] = 0
+dataYesNA$day <- strptime(dataYesNA[,2], "%Y-%m-%d")
+dataYesNA$weekdays <- weekdays(dataYesNA$day)
+df1 = subset(dataYesNA,dataYesNA$weekdays == "星期六" |
+               dataYesNA$weekdays == "星期天")
+df2 = subset(dataYesNA,dataYesNA$weekdays != "星期六" &
+               dataYesNA$weekdays != "星期天")
+##Make new columns. "day" converts the "date" into the data type 
+##that can be read by weekdays() function.
+##For some reason the weekdays are shown in Chinese.
+
+df1mean <- aggregate(steps~interval, df1, mean)
+View(df1mean)
+df2mean <- aggregate(steps~interval, df2, mean)
+View(df2mean)
+
+par(mfrow = c(1, 2))
+with(df1mean,plot(interval,steps, type="l", xlab="Interval - Weekend"))
+with(df2mean,plot(interval,steps, type="l", xlab="Interval - Weekend"))
+```
